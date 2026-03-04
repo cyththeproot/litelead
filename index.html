@@ -2,139 +2,76 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Litelead</title>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.basic.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap" rel="stylesheet">
-    
     <style>
-        :root { --accent: #3b82f6; --text: #002d40; }
-        body { 
-            margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; 
-            font-family: 'Quicksand', sans-serif; background: #eef2f7; color: var(--text);
-        }
-        .glass-container {
-            width: 90%; max-width: 450px; padding: 2rem;
-            background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(20px);
-            border-radius: 35px; border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.05); text-align: center;
-        }
-        .clock { font-size: 3rem; margin-bottom: 1rem; }
-        .search-box { position: relative; width: 100%; }
-        input {
-            width: 100%; padding: 1rem; border-radius: 25px; border: none;
-            background: rgba(255, 255, 255, 0.8); font-size: 1.1rem; outline: none;
-            box-sizing: border-box; font-family: inherit;
-        }
-        .tabs { display: flex; justify-content: space-around; margin-top: 1.5rem; }
-        .tab-btn { 
-            background: none; border: none; cursor: pointer; font-weight: 700; 
-            padding: 8px 15px; border-radius: 15px; transition: 0.3s;
-        }
-        .tab-btn.active { background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        #results { margin-top: 1rem; text-align: left; max-height: 200px; overflow-y: auto; }
-        .res-item { background: white; padding: 10px; border-radius: 15px; margin-bottom: 8px; animation: fadeIn 0.3s; }
-        .res-item a { color: var(--accent); text-decoration: none; display: block; }
-        .util-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 1rem; }
-        .card { background: white; padding: 15px; border-radius: 20px; }
-        .hidden { display: none; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        body { margin:0; background:#f0f4f8; font-family: sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; }
+        .glass { background:white; padding:40px; border-radius:30px; box-shadow:0 20px 50px rgba(0,0,0,0.1); width:400px; text-align:center; }
+        /* Logo Styles */
+        #brand-logo { color:#3b82f6; font-weight:bold; font-size:1.5rem; margin-bottom:10px; display:block; }
+        input { width:100%; padding:15px; border-radius:25px; border:1px solid #ddd; outline:none; box-sizing:border-box; font-size:1rem; }
+        .tabs { display:flex; justify-content:space-around; margin:15px 0; }
+        .tab-btn { background:none; border:none; cursor:pointer; font-weight:bold; opacity:0.5; }
+        .tab-btn.active { opacity:1; color:#3b82f6; border-bottom:2px solid #3b82f6; }
+        #results { margin-top:20px; text-align:left; max-height:200px; overflow-y:auto; }
+        .item { padding:10px; border-bottom:1px solid #eee; animation: fadeIn 0.3s; }
+        .item a { color:#3b82f6; text-decoration:none; font-weight:bold; }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
     </style>
 </head>
 <body>
-
-    <div class="glass-container">
-        <div id="clock" class="clock">00:00</div>
-        
-        <div class="search-box">
-            <input type="text" id="search-input" placeholder="Search..." autocomplete="off">
+    <div class="glass">
+        <span id="brand-logo">Litelead</span>
+        <input type="text" id="search" placeholder="Search the index...">
+        <div class="tabs">
+            <button class="tab-btn active" data-cat="all">All</button>
+            <button class="tab-btn" data-cat="photos">Photos</button>
+            <button class="tab-btn" data-cat="videos">Videos</button>
         </div>
-
-        <nav class="tabs">
-            <button class="tab-btn active" data-target="all">All</button>
-            <button class="tab-btn" data-target="photos">Photos</button>
-            <button class="tab-btn" data-target="videos">Videos</button>
-            <button class="tab-btn" data-target="utility">Utility</button>
-        </nav>
-
         <div id="results"></div>
-
-        <div id="utility-area" class="util-grid hidden">
-            <div class="card"><div id="month" style="font-size:0.8rem">MAR</div><div id="day" style="font-size:2rem">04</div></div>
-            <div class="card"><div id="icon" style="font-size:1.5rem">☀️</div><div id="temp">--°C</div></div>
-        </div>
     </div>
 
     <script>
         let fuse;
-        const input = document.getElementById('search-input');
-        const resultsArea = document.getElementById('results');
-        const utilityArea = document.getElementById('utility-area');
+        const input = document.getElementById('search');
+        const resultsDiv = document.getElementById('results');
         const tabs = document.querySelectorAll('.tab-btn');
 
-        // 1. Clock
-        function tic() {
-            const d = new Date();
-            document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            document.getElementById('month').innerText = d.toLocaleString('en', {month:'short'}).toUpperCase();
-            document.getElementById('day').innerText = d.getDate();
-        }
-        setInterval(tic, 1000); tic();
+        // Force fetch from GitHub with a timestamp to avoid cache issues
+        fetch('./data.json?t=' + Date.now())
+            .then(res => res.json())
+            .then(data => {
+                fuse = new Fuse(data, { keys: ['title', 'description'], threshold: 0.3 });
+                console.log("Index Loaded");
+            });
 
-        // 2. Load Data (Ensures no white screen if JSON fails)
-        fetch('./data.json').then(r => r.json()).then(data => {
-            fuse = new Fuse(data, { keys: ['title', 'description'], threshold: 0.3 });
-        }).catch(e => console.error("JSON Load Error"));
+        function doSearch() {
+            const query = input.value.trim();
+            const activeTab = document.querySelector('.tab-btn.active').dataset.cat;
+            if (!query || !fuse) { resultsDiv.innerHTML = ''; return; }
+            
+            let results = fuse.search(query);
+            if (activeTab !== 'all') {
+                results = results.filter(r => r.item.category === activeTab);
+            }
 
-        // 3. Search Logic
-        function go() {
-            const q = input.value.trim();
-            const tab = document.querySelector('.tab-btn.active').dataset.target;
-            if (!q || !fuse) { resultsArea.innerHTML = ''; return; }
-
-            let r = fuse.search(q);
-            if (tab !== 'all' && tab !== 'utility') r = r.filter(i => i.item.category === tab);
-
-            resultsArea.innerHTML = r.map(x => `
-                <div class="res-item">
-                    <a href="${x.item.url}" target="_blank">${x.item.title}</a>
-                    <div style="font-size:0.8rem; opacity:0.6">${x.item.description}</div>
+            resultsDiv.innerHTML = results.map(r => `
+                <div class="item">
+                    <a href="${r.item.url}" target="_blank">${r.item.title}</a>
+                    <div style="font-size:0.8rem; color:grey;">${r.item.description}</div>
                 </div>
             `).join('');
         }
 
-        input.addEventListener('input', go);
-        input.addEventListener('keydown', (e) => {
-            if(e.key === 'Enter') {
-                const first = resultsArea.querySelector('a');
-                if(first) window.open(first.href, '_blank');
-            }
-        });
+        input.addEventListener('input', doSearch);
 
-        // 4. Tabs
-        tabs.forEach(t => {
-            t.addEventListener('click', () => {
-                tabs.forEach(btn => btn.classList.remove('active'));
-                t.classList.add('active');
-                if(t.dataset.target === 'utility') {
-                    resultsArea.classList.add('hidden');
-                    utilityArea.classList.remove('hidden');
-                    getWeather();
-                } else {
-                    resultsArea.classList.remove('hidden');
-                    utilityArea.classList.add('hidden');
-                    go();
-                }
+        tabs.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabs.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                doSearch();
             });
         });
-
-        async function getWeather() {
-            navigator.geolocation.getCurrentPosition(async (p) => {
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${p.coords.latitude}&longitude=${p.coords.longitude}&current_weather=true`);
-                const data = await res.json();
-                document.getElementById('temp').innerText = Math.round(data.current_weather.temperature) + "°C";
-            });
-        }
     </script>
 </body>
 </html>
