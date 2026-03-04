@@ -1,20 +1,9 @@
 [
-  {
-    "title": "Litelead Source",
-    "description": "The patched 2026 build of Litelead Search.",
-    "url": "https://github.com",
-    "category": "all"
-  },
-  {
-    "title": "Unsplash Photos",
-    "description": "Search beautiful free images.",
-    "url": "https://unsplash.com",
-    "category": "photos"
-  },
-  {
-    "title": "YouTube Home",
-    "description": "Watch the latest video content.",
-    "url": "https://youtube.com",
-    "category": "videos"
-  }
+  { "title": "Google", "description": "The world's largest search engine.", "url": "https://google.com", "category": "all" },
+  { "title": "YouTube", "description": "Videos, music, and live streams.", "url": "https://youtube.com", "category": "videos" },
+  { "title": "Unsplash", "description": "High-quality free photos.", "url": "https://unsplash.com", "category": "photos" },
+  { "title": "Pexels", "description": "Free stock photos and videos.", "url": "https://pexels.com", "category": "photos" },
+  { "title": "Vimeo", "description": "High-quality video hosting for creators.", "url": "https://vimeo.com", "category": "videos" },
+  { "title": "GitHub", "description": "Where the world builds software.", "url": "https://github.com", "category": "all" },
+  { "title": "Wikipedia", "description": "The free encyclopedia.", "url": "https://wikipedia.org", "category": "all" }
 ]
