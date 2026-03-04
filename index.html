@@ -2,76 +2,146 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Litelead</title>
+    <title>Litelead Omni-Index</title>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.basic.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap" rel="stylesheet">
     <style>
-        body { margin:0; background:#f0f4f8; font-family: sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; }
-        .glass { background:white; padding:40px; border-radius:30px; box-shadow:0 20px 50px rgba(0,0,0,0.1); width:400px; text-align:center; }
-        /* Logo Styles */
-        #brand-logo { color:#3b82f6; font-weight:bold; font-size:1.5rem; margin-bottom:10px; display:block; }
-        input { width:100%; padding:15px; border-radius:25px; border:1px solid #ddd; outline:none; box-sizing:border-box; font-size:1rem; }
-        .tabs { display:flex; justify-content:space-around; margin:15px 0; }
-        .tab-btn { background:none; border:none; cursor:pointer; font-weight:bold; opacity:0.5; }
-        .tab-btn.active { opacity:1; color:#3b82f6; border-bottom:2px solid #3b82f6; }
-        #results { margin-top:20px; text-align:left; max-height:200px; overflow-y:auto; }
-        .item { padding:10px; border-bottom:1px solid #eee; animation: fadeIn 0.3s; }
-        .item a { color:#3b82f6; text-decoration:none; font-weight:bold; }
-        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        :root { --accent: #3b82f6; --glass: rgba(255, 255, 255, 0.4); }
+        
+        body { 
+            margin:0; background: #eef2f7; font-family: 'Quicksand', sans-serif; 
+            display:flex; flex-direction: column; align-items:center; 
+            min-height: 100vh; overflow-x: hidden;
+        }
+
+        /* Fixed Search Header */
+        .header {
+            position: sticky; top: 0; width: 100%; z-index: 100;
+            padding: 40px 0; background: rgba(238, 242, 247, 0.8);
+            backdrop-filter: blur(10px); display: flex; justify-content: center;
+        }
+
+        .search-container {
+            width: 90%; max-width: 500px; transition: 0.4s ease;
+        }
+
+        input { 
+            width: 100%; padding: 20px 30px; border-radius: 40px; border: none; 
+            background: white; font-size: 1.3rem; outline: none;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05); font-family: inherit;
+        }
+
+        /* The Animated Index */
+        #index-wall {
+            width: 90%; max-width: 600px; padding-bottom: 100px;
+        }
+
+        .item-card {
+            background: white; margin-bottom: 20px; padding: 25px;
+            border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            display: flex; flex-direction: column; gap: 10px;
+            transform-origin: top center;
+            animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .item-card.suggestion {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white;
+        }
+
+        .item-card.suggestion a { color: white; text-decoration: underline; }
+        .item-card a { color: var(--accent); text-decoration: none; font-size: 1.2rem; }
+        .item-card p { margin: 0; opacity: 0.7; font-size: 0.9rem; }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: translateY(-50px) scale(0.9); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Scroll Progress Bar */
+        #progress {
+            position: fixed; top: 0; left: 0; height: 5px; background: var(--accent);
+            width: 0%; z-index: 200; transition: width 0.2s;
+        }
     </style>
 </head>
 <body>
-    <div class="glass">
-        <span id="brand-logo">Litelead</span>
-        <input type="text" id="search" placeholder="Search the index...">
-        <div class="tabs">
-            <button class="tab-btn active" data-cat="all">All</button>
-            <button class="tab-btn" data-cat="photos">Photos</button>
-            <button class="tab-btn" data-cat="videos">Videos</button>
-        </div>
-        <div id="results"></div>
+
+<div id="progress"></div>
+
+<div class="header">
+    <div class="search-container">
+        <div style="text-align:center; margin-bottom:15px; font-size:1.5rem; color:#002d40;">Litelead</div>
+        <input type="text" id="main-search" placeholder="Search or scroll the index..." autocomplete="off">
+    </div>
+</div>
+
+<div id="index-wall">
     </div>
 
-    <script>
-        let fuse;
-        const input = document.getElementById('search');
-        const resultsDiv = document.getElementById('results');
-        const tabs = document.querySelectorAll('.tab-btn');
+<script>
+    let fuse;
+    let database = [];
+    const input = document.getElementById('main-search');
+    const wall = document.getElementById('index-wall');
+    const progress = document.getElementById('progress');
 
-        // Force fetch from GitHub with a timestamp to avoid cache issues
-        fetch('./data.json?t=' + Date.now())
-            .then(res => res.json())
-            .then(data => {
-                fuse = new Fuse(data, { keys: ['title', 'description'], threshold: 0.3 });
-                console.log("Index Loaded");
-            });
+    // 1. Fetch & Initialize
+    fetch('./data.json?v=' + Date.now())
+        .then(res => res.json())
+        .then(data => {
+            database = data;
+            fuse = new Fuse(data, { keys: ['title', 'description', 'category'], threshold: 0.4 });
+            renderWall(database); // Show everything on start
+        });
 
-        function doSearch() {
-            const query = input.value.trim();
-            const activeTab = document.querySelector('.tab-btn.active').dataset.cat;
-            if (!query || !fuse) { resultsDiv.innerHTML = ''; return; }
-            
-            let results = fuse.search(query);
-            if (activeTab !== 'all') {
-                results = results.filter(r => r.item.category === activeTab);
-            }
-
-            resultsDiv.innerHTML = results.map(r => `
-                <div class="item">
-                    <a href="${r.item.url}" target="_blank">${r.item.title}</a>
-                    <div style="font-size:0.8rem; color:grey;">${r.item.description}</div>
-                </div>
-            `).join('');
+    // 2. Render Engine with Bounce
+    function renderWall(items, query = "") {
+        wall.innerHTML = '';
+        
+        // If searching and no results, add Auto-Suggestions
+        if (query && items.length === 0) {
+            const suggestions = [
+                { title: `Search YouTube for "${query}"`, url: `https://www.youtube.com/results?search_query=${query}`, desc: "Jump to video results", isSuggest: true },
+                { title: `Search Google for "${query}"`, url: `https://www.google.com/search?q=${query}`, desc: "Search the web", isSuggest: true }
+            ];
+            items = suggestions;
         }
 
-        input.addEventListener('input', doSearch);
-
-        tabs.forEach(btn => {
-            btn.addEventListener('click', () => {
-                tabs.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                doSearch();
-            });
+        items.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = `item-card ${item.isSuggest ? 'suggestion' : ''}`;
+            card.style.animationDelay = `${index * 0.05}s`; // Staggered bounce
+            
+            card.innerHTML = `
+                <a href="${item.url || item.item.url}" target="_blank">
+                    ${item.title || item.item.title}
+                </a>
+                <p>${item.description || item.item.description || item.desc}</p>
+            `;
+            wall.appendChild(card);
         });
-    </script>
+    }
+
+    // 3. Live Search logic
+    input.addEventListener('input', () => {
+        const q = input.value.trim();
+        if (!q) {
+            renderWall(database);
+            return;
+        }
+        const results = fuse.search(q);
+        renderWall(results, q);
+    });
+
+    // 4. Scroll Progress Logic
+    window.addEventListener('scroll', () => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        progress.style.width = scrolled + "%";
+    });
+</script>
+
 </body>
 </html>
