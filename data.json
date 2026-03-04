@@ -1,20 +1,20 @@
 [
-{
-"title": "Google",
-"description": "Search engine.",
-"url": "https://google.com",
-"category": "all"
-},
-{
-"title": "Image",
-"description": "A photo.",
-"url": "https://unsplash.com",
-"category": "photos"
-},
-{
-"title": "Movie",
-"description": "A video.",
-"url": "https://youtube.com",
-"category": "videos"
-}
+  {
+    "title": "Litelead Source",
+    "description": "The patched 2026 build of Litelead Search.",
+    "url": "https://github.com",
+    "category": "all"
+  },
+  {
+    "title": "Unsplash Photos",
+    "description": "Search beautiful free images.",
+    "url": "https://unsplash.com",
+    "category": "photos"
+  },
+  {
+    "title": "YouTube Home",
+    "description": "Watch the latest video content.",
+    "url": "https://youtube.com",
+    "category": "videos"
+  }
 ]
