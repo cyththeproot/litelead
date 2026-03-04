@@ -2,52 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Litelead Ultimate</title>
+    <title>Litelead Sentient Hub</title>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --accent: #3b82f6; 
-            --bg: #eef2f7; 
-            --card-bg: #ffffff; 
-            --text: #1e293b; 
-            --glass: rgba(238, 242, 247, 0.9);
-        }
+        :root { --accent: #3b82f6; --bg: #eef2f7; --card: #ffffff; --text: #1e293b; --glass: rgba(238, 242, 247, 0.9); }
+        [data-theme="dark"] { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --glass: rgba(15, 23, 42, 0.9); }
 
-        [data-theme="dark"] {
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --text: #f8fafc;
-            --glass: rgba(15, 23, 42, 0.9);
-        }
-
-        body { 
-            margin:0; background: var(--bg); color: var(--text); 
-            font-family: 'Quicksand', sans-serif; display:flex; flex-direction:column; 
-            align-items:center; min-height: 100vh; transition: 0.3s;
-        }
-        
-        .top-nav { width: 100%; max-width: 600px; display: flex; justify-content: space-between; padding: 20px; box-sizing: border-box; }
+        body { margin:0; background: var(--bg); color: var(--text); font-family: 'Quicksand', sans-serif; display:flex; flex-direction:column; align-items:center; min-height: 100vh; transition: 0.3s; }
+        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; padding: 20px; box-sizing: border-box; }
         #clock { font-size: 1.5rem; opacity: 0.8; }
 
         .search-sticky { position: sticky; top: 0; width: 100%; background: var(--glass); backdrop-filter: blur(10px); padding: 15px 0; z-index: 100; display: flex; flex-direction: column; align-items: center; }
-        input#main-in { width: 90%; max-width: 500px; padding: 18px 25px; border-radius: 35px; border: none; background: var(--card-bg); color: var(--text); font-size: 1.1rem; box-shadow: 0 10px 30px rgba(0,0,0,0.05); outline: none; }
+        input#main-in { width: 90%; max-width: 500px; padding: 18px 25px; border-radius: 35px; border: none; background: var(--card); color: var(--text); font-size: 1.1rem; box-shadow: 0 10px 30px rgba(0,0,0,0.05); outline: none; }
 
         .tabs { display: flex; gap: 10px; margin-top: 15px; }
-        .tab { background: var(--card-bg); color: var(--text); border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; font-family: inherit; }
+        .tab { background: var(--card); color: var(--text); border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; font-family: inherit; }
         .tab.active { background: var(--accent); color: white; }
 
         #content-wall { width: 90%; max-width: 550px; margin-top: 20px; }
-        .card { background: var(--card-bg); padding: 20px; border-radius: 25px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); animation: bounce 0.4s ease; }
+        .card { background: var(--card); padding: 20px; border-radius: 25px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); animation: bounce 0.4s ease; }
         .fact-card { background: var(--accent); color: white; }
         
-        /* Utilities */
+        /* Currency & Weather Styles */
         .util-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .currency-list { max-height: 150px; overflow-y: auto; text-align: left; padding: 10px; background: rgba(0,0,0,0.05); border-radius: 15px; margin-top: 10px; }
+        .curr-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(0,0,0,0.1); font-size: 0.9rem; }
+        
         .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px; font-size: 0.8rem; }
         .cal-day { padding: 5px; text-align: center; border-radius: 8px; }
         .today { background: var(--accent); color: white; }
-
-        .toggle-btn { width: 100%; padding: 15px; border-radius: 20px; border: none; background: var(--accent); color: white; cursor: pointer; font-weight: bold; font-family: inherit; }
 
         @keyframes bounce { 0% { opacity:0; transform: translateY(-20px); } 100% { opacity:1; transform: translateY(0); } }
         .hidden { display: none !important; }
@@ -55,13 +39,13 @@
 </head>
 <body>
 
-<div class="top-nav">
+<div class="header">
     <div style="color:var(--accent); font-size:1.5rem;">Litelead</div>
     <div id="clock">00:00</div>
 </div>
 
 <div class="search-sticky">
-    <input type="text" id="main-in" placeholder="Search person, place, thing..." autocomplete="off">
+    <input type="text" id="main-in" placeholder="Search anything..." autocomplete="off">
     <div class="tabs">
         <button class="tab active" onclick="switchView('all')">Search</button>
         <button class="tab" onclick="switchView('util')">Utilities</button>
@@ -74,111 +58,112 @@
     <div id="util-view" class="hidden">
         <div class="util-grid">
             <div class="card">
-                <div style="font-size:0.7rem; opacity:0.5; margin-bottom:10px;">THEME CONTROL</div>
-                <button class="toggle-btn" onclick="toggleTheme()">Switch Light/Dark Mode</button>
-            </div>
-            
-            <div class="card">
-                <div id="cal-month" style="font-size: 1.2rem; margin-bottom: 10px; color: var(--accent);">Month</div>
-                <div class="calendar" id="calendar-grid"></div>
+                <div style="font-size:0.7rem; opacity:0.5; margin-bottom:5px;">LOCAL WEATHER</div>
+                <div style="display:flex; justify-content: space-between; align-items: center;">
+                    <div id="w-desc" style="font-size: 1.2rem;">Fetching...</div>
+                    <div id="w-temp" style="font-size: 2rem; font-weight: bold;">--°C</div>
+                </div>
             </div>
 
             <div class="card">
-                <div style="font-size:0.7rem; opacity:0.5; margin-bottom:10px;">CURRENCY (USD to GBP)</div>
-                <input type="number" id="usd" style="width:60px; background:none; color:var(--text); border:1px solid #888;" value="1" oninput="convert()"> USD = 
-                <span id="gbp" style="font-weight:bold;">£0.79</span>
+                <button style="width:100%; padding:10px; border-radius:15px; border:none; background:var(--accent); color:white; font-weight:bold; cursor:pointer;" onclick="toggleTheme()">Toggle Dark Mode</button>
+                <div style="margin-top:15px; font-size:0.9rem;">
+                    1 USD = <input type="number" id="base-val" value="1" oninput="updateCurrencies()" style="width:50px; background:none; border:1px solid var(--accent); color:var(--text); text-align:center; border-radius:5px;">
+                    <div class="currency-list" id="curr-box"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div id="cal-month" style="font-size: 1.1rem; color: var(--accent); margin-bottom:10px;">Month</div>
+                <div class="calendar" id="calendar-grid"></div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// 1. CLOCK & CALENDAR
-function initDashboard() {
+// 1. DATA & INITIALIZATION
+const rates = { GBP: 0.79, EUR: 0.92, JPY: 150.2, CAD: 1.35, AUD: 1.53, CHF: 0.88, CNY: 7.19, INR: 82.9 };
+
+function init() {
+    updateClock();
+    initCalendar();
+    updateCurrencies();
+    getWeather();
+}
+setInterval(updateClock, 1000);
+
+function updateClock() {
     const d = new Date();
     document.getElementById('clock').innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    
-    // Calendar Logic
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    document.getElementById('cal-month').innerText = monthNames[d.getMonth()] + " " + d.getFullYear();
-    
-    const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
-    const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+}
+
+// 2. WEATHER ENGINE
+async function getWeather() {
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+        try {
+            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true`);
+            const data = await res.json();
+            document.getElementById('w-temp').innerText = Math.round(data.current_weather.temperature) + "°C";
+            document.getElementById('w-desc').innerText = "Clear Skies"; // Simplified
+        } catch(e) { document.getElementById('w-desc').innerText = "Location Error"; }
+    });
+}
+
+// 3. CURRENCY LIST ENGINE
+function updateCurrencies() {
+    const base = document.getElementById('base-val').value;
+    const box = document.getElementById('curr-box');
+    box.innerHTML = Object.entries(rates).map(([code, rate]) => `
+        <div class="curr-row"><span>${code}</span><span>${(base * rate).toFixed(2)}</span></div>
+    `).join('');
+}
+
+// 4. CALENDAR
+function initCalendar() {
+    const d = new Date();
     const grid = document.getElementById('calendar-grid');
+    document.getElementById('cal-month').innerText = d.toLocaleString('default', { month: 'long' }) + " " + d.getFullYear();
     grid.innerHTML = "";
-
-    // Fill empty slots
-    for (let i = 0; i < firstDay; i++) grid.innerHTML += '<div></div>';
-    
-    // Fill days
-    for (let i = 1; i <= daysInMonth; i++) {
-        const isToday = i === d.getDate() ? 'today' : '';
-        grid.innerHTML += `<div class="cal-day ${isToday}">${i}</div>`;
+    const first = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
+    const last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    for (let i = 0; i < first; i++) grid.innerHTML += '<div></div>';
+    for (let i = 1; i <= last; i++) {
+        grid.innerHTML += `<div class="cal-day ${i===d.getDate()?'today':''}">${i}</div>`;
     }
 }
-setInterval(initDashboard, 1000);
-initDashboard();
 
-// 2. THEME TOGGLE
+// 5. SEARCH & UI LOGIC
 function toggleTheme() {
-    const body = document.body;
-    const current = body.getAttribute('data-theme');
-    body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 }
 
-// 3. VIEW SWITCHER
-function switchView(view) {
-    const res = document.getElementById('results');
-    const util = document.getElementById('util-view');
-    const tabs = document.querySelectorAll('.tab');
-    tabs.forEach(t => t.classList.remove('active'));
-    
-    if(view === 'util') {
-        res.classList.add('hidden');
-        util.classList.remove('hidden');
-        tabs[1].classList.add('active');
-    } else {
-        res.classList.remove('hidden');
-        util.classList.add('hidden');
-        tabs[0].classList.add('active');
-    }
+function switchView(v) {
+    document.getElementById('results').classList.toggle('hidden', v === 'util');
+    document.getElementById('util-view').classList.toggle('hidden', v === 'all');
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (v === 'all' && i === 0) || (v === 'util' && i === 1)));
 }
 
-// 4. SENTIENT SEARCH (Wikipedia)
 const input = document.getElementById('main-in');
-const resDiv = document.getElementById('results');
-
 input.addEventListener('input', async () => {
     const q = input.value.trim();
+    const resDiv = document.getElementById('results');
     if(!q) { resDiv.innerHTML = ''; return; }
-
-    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}?origin=*`;
+    
     try {
-        const r = await fetch(url);
+        const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}?origin=*`);
         const data = r.ok ? await r.json() : null;
-        resDiv.innerHTML = '';
-
-        if(data && data.extract) {
-            resDiv.innerHTML += `
-                <div class="card fact-card">
-                    <div style="font-size:1.3rem; margin-bottom:10px;">${data.title}</div>
-                    <div style="font-size:0.9rem; line-height:1.4; opacity:0.9;">${data.extract}</div>
-                </div>`;
-        }
-
+        resDiv.innerHTML = data && data.extract ? `
+            <div class="card fact-card"><h3>${data.title}</h3><p style="font-size:0.9rem;">${data.extract}</p></div>
+        ` : '';
         resDiv.innerHTML += `
-            <div class="card">
-                <a href="https://youtube.com/results?search_query=${q}" target="_blank" style="color:var(--accent); text-decoration:none; display:block; margin-bottom:10px;">🎬 Watch on YouTube</a>
-                <a href="https://google.com/search?tbm=isch&q=${q}" target="_blank" style="color:var(--accent); text-decoration:none; display:block;">📸 View Images</a>
-            </div>`;
-    } catch(e) { console.log("Search error"); }
+            <div class="card"><a href="https://youtube.com/results?search_query=${q}" target="_blank" style="color:var(--accent); text-decoration:none;">🎬 Watch ${q} on YouTube</a></div>
+            <div class="card"><a href="https://google.com/search?tbm=isch&q=${q}" target="_blank" style="color:var(--accent); text-decoration:none;">📸 View ${q} Images</a></div>
+        `;
+    } catch(e) {}
 });
 
-function convert() {
-    const usd = document.getElementById('usd').value;
-    document.getElementById('gbp').innerText = "£" + (usd * 0.79).toFixed(2);
-}
+init();
 </script>
-
 </body>
 </html>
