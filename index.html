@@ -1,297 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Litelead | Midnight</title>
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap" rel="stylesheet">
-<style>
-:root {
---bg: #0b0e14; /* Deep Midnight Charcoal */
---primary-text: #e1e3e6; /* Soft-white for eye comfort */
---accent: #8ab4f8; /* Electric Blue Accent */
---glass: rgba(20, 24, 30, 0.75); /* Darker Glass */
---m3-surface: rgba(255, 255, 255, 0.05); /* Material You Dark Surface */
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Litelead | Pure Search</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.basic.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-text: #002d40;
+            --accent: #3b82f6;
+            --glass: rgba(255, 255, 255, 0.2);
+            --m3-surface: rgba(255, 255, 255, 0.45);
+        }
 
-body {
-margin: 0;
-height: 100vh;
-display: flex;
-justify-content: center;
-align-items: center;
-font-family: 'Quicksand', sans-serif;
-font-weight: 700;
-/* 2026 Mesh Gradient Effect */
-background: radial-gradient(circle at top right, #1a1f2e, var(--bg));
-color: var(--primary-text);
-overflow: hidden;
-}
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+            background: radial-gradient(circle at top, #ffffff, #d1e4ff);
+            color: var(--primary-text);
+            overflow: hidden;
+        }
 
-.glass-container {
-width: 90%;
-max-width: 500px;
-padding: 2.5rem;
-background: var(--glass);
-backdrop-filter: blur(30px) saturate(180%);
--webkit-backdrop-filter: blur(30px) saturate(180%);
-border-radius: 40px;
-border: 1px solid rgba(255, 255, 255, 0.1);
-box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
-transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-text-align: center;
-}
-
-.liquid-clock {
-font-size: 3.8rem;
-margin-bottom: 1.5rem;
-letter-spacing: -2px;
-text-shadow: 0 10px 20px rgba(0,0,0,0.3);
-}
-
-.search-row {
-display: flex;
-align-items: center;
-justify-content: center;
-transition: 0.5s ease;
-}
-
-#brand-logo {
-font-size: 1.6rem;
-color: var(--accent);
-width: 0;
-opacity: 0;
-overflow: hidden;
-white-space: nowrap;
-transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.searching #brand-logo {
-width: 120px;
-opacity: 1;
-margin-right: 15px;
-}
-
-.input-wrapper { position: relative; flex-grow: 1; }
-
-input {
-width: 100%;
-padding: 1.3rem;
-border: none;
-border-radius: 28px;
-background: rgba(255, 255, 255, 0.05);
-color: white;
-font-family: inherit;
-font-weight: 700;
-font-size: 1.2rem;
-outline: none;
-box-sizing: border-box;
-border: 1px solid rgba(255, 255, 255, 0.08);
-transition: 0.3s;
-}
-
-input:focus { border-color: var(--accent); background: rgba(255, 255, 255, 0.08); }
-
-/* Seed Drop Effect */
-.input-wrapper:hover::after {
-content: '';
-position: absolute;
-bottom: -18px;
-left: 50%;
-width: 8px;
-height: 8px;
-background: var(--accent);
-border-radius: 50%;
-filter: blur(3px);
-animation: dropFall 0.9s ease-out infinite;
-}
-
-@keyframes dropFall {
-0% { transform: translateX(-50%) translateY(-10px); opacity: 0; }
-100% { transform: translateX(-50%) translateY(20px); opacity: 0; scale: 3; }
-}
-
-nav.tabs {
-display: flex;
-justify-content: space-around;
-margin-top: 2rem;
-gap: 5px;
-}
-
-.tab-btn {
-background: transparent;
-border: none;
-font-family: inherit;
-font-weight: 700;
-padding: 0.7rem 1.2rem;
-border-radius: 22px;
-cursor: pointer;
-color: var(--primary-text);
-opacity: 0.6;
-transition: 0.3s;
-}
-
-.tab-btn.active {
-opacity: 1;
-background: var(--m3-surface);
-box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-transform: translateY(-2px);
-}
-
-.content-container {
-margin-top: 1.5rem;
-max-height: 280px;
-overflow-y: auto;
-scrollbar-width: none;
-}
-
-.result-item {
-background: rgba(255,255,255,0.03);
-margin-bottom: 12px;
-padding: 15px;
-border-radius: 22px;
-text-align: left;
-border: 1px solid rgba(255,255,255,0.05);
-animation: bloom 0.4s ease forwards;
-}
-
-.result-item a { color: var(--accent); text-decoration: none; font-size: 1.1rem; }
-
-.utility-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
-.util-card {
-background: var(--m3-surface);
-padding: 20px;
-border-radius: 30px;
-border: 1px solid rgba(255,255,255,0.05);
-}
-
-.weather-anim { font-size: 2.8rem; animation: float 3s infinite ease-in-out; }
-
-@keyframes float { 50% { transform: translateY(-10px); } }
-@keyframes bloom { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.hidden { display: none; }
-</style>
-</head>
-<body>
-
-<div class="glass-container" id="main-container">
-<div id="clock" class="liquid-clock">00:00</div>
-
-<div class="search-row">
-<span id="brand-logo">Litelead</span>
-<div class="input-wrapper">
-<input type="text" id="search-input" placeholder="Search..." autocomplete="off">
-</div>
-</div>
-
-<nav class="tabs">
-<button class="tab-btn active" data-target="all">All</button>
-<button class="tab-btn" data-target="photos">Photos</button>
-<button class="tab-btn" data-target="videos">Videos</button>
-<button class="tab-btn" data-target="utility">Utility</button>
-</nav>
-
-<div class="content-container">
-<div id="results-area"></div>
-
-<div id="utility-area" class="utility-grid hidden">
-<div class="util-card">
-<div style="font-size: 0.65rem; opacity: 0.4; letter-spacing: 1px;">CALENDAR</div>
-<div id="u-month" style="font-size: 1.3rem; margin-top: 5px;">MAR</div>
-<div id="u-day" style="font-size: 2.8rem;">04</div>
-</div>
-<div class="util-card">
-<div style="font-size: 0.65rem; opacity: 0.4; letter-spacing: 1px;">WEATHER</div>
-<div id="w-icon" class="weather-anim">☀️</div>
-<div id="w-temp" style="font-size: 1.6rem;">--°C</div>
-</div>
-</div>
-</div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.basic.min.js"></script>
-
-<script>
-let fuse;
-const input = document.getElementById('search-input');
-const container = document.getElementById('main-container');
-const resultsArea = document.getElementById('results-area');
-const utilityArea = document.getElementById('utility-area');
-
-// Clock Logic
-function updateTime() {
-const now = new Date();
-document.getElementById('clock').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-document.getElementById('u-month').innerText = now.toLocaleString('default', { month: 'short' }).toUpperCase();
-document.getElementById('u-day').innerText = now.getDate();
-}
-setInterval(updateTime, 1000); updateTime();
-
-// Load JSON Data
-fetch('data.json')
-.then(res => res.json())
-.then(data => {
-fuse = new Fuse(data, { keys: ['title', 'description'], threshold: 0.3 });
-});
-
-// Search Engine
-function search() {
-const query = input.value;
-const activeTab = document.querySelector('.tab-btn.active').dataset.target;
-
-if (!query) {
-resultsArea.innerHTML = '';
-container.classList.remove('searching');
-return;
-}
-
-container.classList.add('searching');
-let results = fuse.search(query);
-
-if (activeTab !== 'all' && activeTab !== 'utility') {
-results = results.filter(r => r.item.category === activeTab);
-}
-
-resultsArea.innerHTML = results.map(r => `
-<div class="result-item">
-<a href="${r.item.url}" target="_blank">${r.item.title}</a>
-<p style="font-size: 0.85rem; opacity: 0.5; margin-top: 5px;">${r.item.description}</p>
-</div>
-`).join('');
-}
-
-input.addEventListener('input', search);
-
-// Tab Interactions
-document.querySelectorAll('.tab-btn').forEach(btn => {
-btn.addEventListener('click', () => {
-document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-btn.classList.add('active');
-
-if(btn.dataset.target === 'utility') {
-resultsArea.classList.add('hidden');
-utilityArea.classList.remove('hidden');
-fetchWeather();
-} else {
-resultsArea.classList.remove('hidden');
-utilityArea.classList.add('hidden');
-search();
-}
-});
-});
-
-// 2026 Weather API Integration
-async function fetchWeather() {
-navigator.geolocation.getCurrentPosition(async (pos) => {
-try {
-const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true`);
-const data = await res.json();
-document.getElementById('w-temp').innerText = Math.round(data.current_weather.temperature) + "°C";
-document.getElementById('w-icon').innerText = data.current_weather.weathercode > 0 ? "☁️" : "☀️";
-} catch(e) { document.getElementById('w-temp').innerText = "Offline"; }
-});
-}
-</script>
-</body>
-</html>
+        .glass-container {
+            width: 90%;
+            max-width: 500px;
+            padding: 2.5rem;
+            background: var(--glass);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180
