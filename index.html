@@ -2,148 +2,113 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Litelead Fixed & Sentient</title>
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js"></script>
+    <title>Litelead Advanced</title>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.basic.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #3b82f6; --dark: #1e293b; }
-        body { margin:0; background: #eef2f7; font-family: 'Quicksand', sans-serif; display:flex; flex-direction:column; align-items:center; min-height: 100vh; }
+        :root { --accent: #3b82f6; --bg: #f0f4f8; }
+        body { margin:0; background: var(--bg); font-family: 'Quicksand', sans-serif; display:flex; flex-direction:column; align-items:center; min-height:100vh; }
         
-        .top-nav { width: 100%; max-width: 600px; display: flex; justify-content: space-between; padding: 20px; box-sizing: border-box; }
-        #clock { font-size: 1.5rem; color: var(--dark); }
+        /* Header & Logo */
+        .header { width: 100%; max-width: 600px; display: flex; justify-content: space-between; padding: 20px; box-sizing: border-box; }
+        #logo { color: var(--accent); font-size: 1.5rem; }
+        #clock { font-size: 1.5rem; opacity: 0.6; }
 
-        .search-sticky { position: sticky; top: 0; width: 100%; background: rgba(238,242,247,0.9); backdrop-filter: blur(10px); padding: 15px 0; z-index: 100; display: flex; flex-direction: column; align-items: center; }
-        input { width: 90%; max-width: 500px; padding: 18px 25px; border-radius: 35px; border: none; background: white; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(0,0,0,0.05); outline: none; }
+        /* Search Window */
+        .search-window { position: sticky; top: 0; width: 100%; background: rgba(240,244,248,0.9); backdrop-filter: blur(15px); padding: 20px 0; z-index: 100; display: flex; flex-direction: column; align-items:center; }
+        input { width: 90%; max-width: 500px; padding: 18px 25px; border-radius: 35px; border: none; background: white; font-size: 1.2rem; outline: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
 
-        .tabs { display: flex; gap: 10px; margin-top: 15px; }
-        .tab { background: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; font-family: inherit; }
-        .tab.active { background: var(--accent); color: white; }
-
-        #content-wall { width: 90%; max-width: 550px; margin-top: 20px; }
-        .card { background: white; padding: 20px; border-radius: 25px; margin-bottom: 15px; animation: bounce 0.4s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
-        .fact-card { background: var(--dark); color: white; }
+        /* The Bounce Window (Results) */
+        #main-wall { width: 90%; max-width: 550px; padding: 20px 0; }
         
-        /* Utility Styles */
-        .util-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .util-box { background: white; padding: 25px; border-radius: 25px; text-align: center; }
-        input.conv { width: 80px; padding: 5px; border-radius: 10px; border: 1px solid #ddd; text-align: center; }
+        /* THE INSTANT ANSWER CARD (The "Advanced" part) */
+        .instant-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a); color: white;
+            padding: 30px; border-radius: 30px; margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
-        @keyframes bounce { 0% { opacity:0; transform: translateY(-20px); } 100% { opacity:1; transform: translateY(0); } }
-        .hidden { display: none !important; }
+        .standard-card {
+            background: white; padding: 20px; border-radius: 25px; margin-bottom: 15px;
+            animation: bounceIn 0.5s ease forwards; box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+        }
+        .standard-card a { color: var(--accent); text-decoration: none; font-weight: bold; }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: translateY(-40px) scale(0.9); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
     </style>
 </head>
 <body>
 
-<div class="top-nav">
-    <div style="color:var(--accent); font-size:1.5rem;">Litelead</div>
+<div class="header">
+    <div id="logo">Litelead</div>
     <div id="clock">00:00</div>
 </div>
 
-<div class="search-sticky">
-    <input type="text" id="main-in" placeholder="Search or ask..." autocomplete="off">
-    <div class="tabs">
-        <button class="tab active" onclick="switchView('all')">All</button>
-        <button class="tab" onclick="switchView('util')">Utilities</button>
-    </div>
+<div class="search-window">
+    <input type="text" id="search-in" placeholder="Ask a question or search..." autocomplete="off">
 </div>
 
-<div id="content-wall">
-    <div id="results"></div>
-    
-    <div id="util-view" class="hidden">
-        <div class="util-grid">
-            <div class="util-box">
-                <div style="font-size:0.8rem; opacity:0.5;">DATE</div>
-                <div id="u-date" style="font-size:1.6rem;">--</div>
-            </div>
-            <div class="util-box">
-                <div style="font-size:0.8rem; opacity:0.5;">CURRENCY (USD to GBP)</div>
-                <div style="margin-top:10px;">
-                    $<input type="number" id="usd" class="conv" value="1" oninput="convert()"> = 
-                    <span id="gbp" style="font-weight:bold; font-size:1.2rem;">£0.79</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<div id="main-wall"></div>
 
 <script>
-// 1. CLOCK (Global to ensure it starts immediately)
-function updateClock() {
-    const d = new Date();
-    const clock = document.getElementById('clock');
-    if(clock) clock.innerText = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    const date = document.getElementById('u-date');
-    if(date) date.innerText = d.toLocaleDateString([], {month:'long', day:'numeric'});
-}
-setInterval(updateClock, 1000);
-updateClock();
+    const wall = document.getElementById('main-wall');
+    const input = document.getElementById('search-in');
 
-// 2. VIEW SWITCHER
-function switchView(view) {
-    const res = document.getElementById('results');
-    const util = document.getElementById('util-view');
-    const tabs = document.querySelectorAll('.tab');
-    
-    tabs.forEach(t => t.classList.remove('active'));
-    if(view === 'util') {
-        res.classList.add('hidden');
-        util.classList.remove('hidden');
-        tabs[1].classList.add('active');
-    } else {
-        res.classList.remove('hidden');
-        util.classList.add('hidden');
-        tabs[0].classList.add('active');
-    }
-}
-
-// 3. SENTIENT SEARCH (With CORS Fix)
-async function fetchWiki(q) {
-    if(q.length < 3) return null;
-    // Added origin=* to prevent GitHub Pages from blocking the request
-    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}?origin=*`;
-    try {
-        const r = await fetch(url);
-        return r.ok ? await r.json() : null;
-    } catch(e) { return null; }
-}
-
-const input = document.getElementById('main-in');
-const resDiv = document.getElementById('results');
-
-input.addEventListener('input', async () => {
-    const q = input.value.trim();
-    if(!q) { resDiv.innerHTML = ''; return; }
-
-    const data = await fetchWiki(q);
-    resDiv.innerHTML = '';
-
-    if(data && data.extract) {
-        resDiv.innerHTML += `
-            <div class="card fact-card">
-                <div style="font-size:0.7rem; color:var(--accent); margin-bottom:5px;">KNOWLEDGE</div>
-                <div style="font-size:1.3rem; margin-bottom:10px;">${data.title}</div>
-                <div style="font-size:0.9rem; line-height:1.4; opacity:0.9;">${data.extract}</div>
-            </div>`;
-    }
-
-    // Media Links
-    const links = [
-        { n: "YouTube Video Search", u: `https://youtube.com/results?search_query=${q}` },
-        { n: "Google Images", u: `https://google.com/search?tbm=isch&q=${q}` }
+    // Simple Data for Demo (Your data.json would load here)
+    const localData = [
+        { title: "Tri Paloski", url: "https://youtube.com", description: "Hardbass music video." },
+        { title: "DanTDM", url: "https://youtube.com/user/dantdm", description: "The Diamond Minecart." }
     ];
-    links.forEach(l => {
-        resDiv.innerHTML += `<div class="card"><a href="${l.u}" target="_blank" style="color:var(--accent); text-decoration:none;">${l.n} →</a></div>`;
-    });
-});
 
-// 4. CURRENCY LOGIC
-function convert() {
-    const usd = document.getElementById('usd').value;
-    const gbp = document.getElementById('gbp');
-    // Hardcoded rate for speed, can be updated to an API later
-    gbp.innerText = "£" + (usd * 0.79).toFixed(2);
-}
+    // 1. CLOCK
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    }, 1000);
+
+    // 2. THE "BRAIN" (Instant Answer Logic)
+    function getInstantAnswer(q) {
+        q = q.toLowerCase();
+        
+        // Example: If user asks about time
+        if (q.includes("time")) return `The current time is ${new Date().toLocaleTimeString()}.`;
+        
+        // Example: If user asks about specific music
+        if (q.includes("tri paloski")) return "Tri Paloski is a famous Hardbass track often associated with Slavic 'Gopnik' culture.";
+        
+        // Example: If user asks "Who is"
+        if (q.includes("who is dantdm")) return "DanTDM (Daniel Robert Middleton) is a British YouTuber known for his Minecraft videos and gaming content.";
+        
+        return null;
+    }
+
+    // 3. RENDER ENGINE
+    input.addEventListener('input', () => {
+        const q = input.value.trim();
+        wall.innerHTML = '';
+        if (!q) return;
+
+        // A. Check for Instant Answer first
+        const answer = getInstantAnswer(q);
+        if (answer) {
+            const card = document.createElement('div');
+            card.className = 'instant-card';
+            card.innerHTML = `<div style="font-size:0.7rem; opacity:0.5; margin-bottom:10px; letter-spacing:1px;">LITELEAD INSTANT ANSWER</div>
+                              <div style="font-size:1.3rem; line-height:1.4;">${answer}</div>`;
+            wall.appendChild(card);
+        }
+
+        // B. Show standard links
+        localData.filter(d => d.title.toLowerCase().includes(q.toLowerCase())).forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'standard-card';
+            card.innerHTML = `<a href="${item.url}" target="_blank">${item.title}</a><p style="margin:5px 0 0 0; opacity:0.6; font-size:0.9rem;">${item.description}</p>`;
+            wall.appendChild(card);
+        });
+    });
 </script>
 
 </body>
