@@ -2,145 +2,176 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Litelead Omni-Index</title>
+    <title>Litelead Ultimate</title>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.basic.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #3b82f6; --glass: rgba(255, 255, 255, 0.4); }
+        :root { --accent: #3b82f6; --text: #002d40; }
         
         body { 
-            margin:0; background: #eef2f7; font-family: 'Quicksand', sans-serif; 
-            display:flex; flex-direction: column; align-items:center; 
-            min-height: 100vh; overflow-x: hidden;
+            margin:0; background: #f0f4f8; font-family: 'Quicksand', sans-serif; 
+            display:flex; flex-direction: column; align-items:center; min-height: 100vh;
         }
 
-        /* Fixed Search Header */
-        .header {
+        /* Top Header: Logo & Time */
+        .top-bar {
+            width: 100%; max-width: 600px; display: flex; justify-content: space-between;
+            align-items: center; padding: 20px; box-sizing: border-box;
+        }
+        #logo { color: var(--accent); font-size: 1.5rem; }
+        #clock { font-size: 1.5rem; opacity: 0.8; }
+
+        /* Search Section */
+        .search-area {
             position: sticky; top: 0; width: 100%; z-index: 100;
-            padding: 40px 0; background: rgba(238, 242, 247, 0.8);
-            backdrop-filter: blur(10px); display: flex; justify-content: center;
+            background: rgba(240, 244, 248, 0.9); backdrop-filter: blur(15px);
+            padding: 20px 0; display: flex; flex-direction: column; align-items: center;
         }
-
-        .search-container {
-            width: 90%; max-width: 500px; transition: 0.4s ease;
-        }
-
+        .input-box { width: 90%; max-width: 500px; position: relative; }
         input { 
-            width: 100%; padding: 20px 30px; border-radius: 40px; border: none; 
-            background: white; font-size: 1.3rem; outline: none;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.05); font-family: inherit;
+            width: 100%; padding: 18px 25px; border-radius: 35px; border: none; 
+            background: white; font-size: 1.2rem; outline: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); font-family: inherit;
         }
 
-        /* The Animated Index */
-        #index-wall {
-            width: 90%; max-width: 600px; padding-bottom: 100px;
+        /* Tabs */
+        .tabs { display: flex; gap: 10px; margin-top: 15px; }
+        .tab-btn { 
+            background: rgba(255,255,255,0.5); border: none; padding: 8px 20px; 
+            border-radius: 20px; cursor: pointer; font-family: inherit; font-weight: 700;
+            transition: 0.3s;
         }
+        .tab-btn.active { background: var(--accent); color: white; }
 
-        .item-card {
-            background: white; margin-bottom: 20px; padding: 25px;
-            border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.03);
-            display: flex; flex-direction: column; gap: 10px;
-            transform-origin: top center;
-            animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-            border: 1px solid rgba(255,255,255,0.5);
+        /* Results Wall */
+        #main-wall { width: 90%; max-width: 550px; padding: 20px 0 100px 0; }
+        .bounce-card {
+            background: white; padding: 20px; border-radius: 25px; margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            animation: bounceDrop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
         }
+        .bounce-card.suggest { background: var(--accent); color: white; }
+        .bounce-card.suggest a { color: white; }
+        .bounce-card a { color: var(--accent); text-decoration: none; font-size: 1.1rem; display: block; }
+        
+        /* Utility Grid */
+        .util-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .util-card { background: white; padding: 20px; border-radius: 25px; text-align: center; }
 
-        .item-card.suggestion {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white;
-        }
-
-        .item-card.suggestion a { color: white; text-decoration: underline; }
-        .item-card a { color: var(--accent); text-decoration: none; font-size: 1.2rem; }
-        .item-card p { margin: 0; opacity: 0.7; font-size: 0.9rem; }
-
-        @keyframes bounceIn {
-            0% { opacity: 0; transform: translateY(-50px) scale(0.9); }
+        @keyframes bounceDrop {
+            0% { opacity: 0; transform: translateY(-30px) scale(0.9); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Scroll Progress Bar */
-        #progress {
-            position: fixed; top: 0; left: 0; height: 5px; background: var(--accent);
-            width: 0%; z-index: 200; transition: width 0.2s;
-        }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div id="progress"></div>
+<div class="top-bar">
+    <div id="logo">Litelead</div>
+    <div id="clock">00:00</div>
+</div>
 
-<div class="header">
-    <div class="search-container">
-        <div style="text-align:center; margin-bottom:15px; font-size:1.5rem; color:#002d40;">Litelead</div>
-        <input type="text" id="main-search" placeholder="Search or scroll the index..." autocomplete="off">
+<div class="search-area">
+    <div class="input-box">
+        <input type="text" id="main-in" placeholder="Search anything..." autocomplete="off">
+    </div>
+    <div class="tabs">
+        <button class="tab-btn active" data-target="all">All</button>
+        <button class="tab-btn" data-target="photos">Photos</button>
+        <button class="tab-btn" data-target="videos">Videos</button>
+        <button class="tab-btn" data-target="utility">Utility</button>
     </div>
 </div>
 
-<div id="index-wall">
+<div id="main-wall">
+    <div id="results-container"></div>
+    <div id="utility-view" class="hidden">
+        <div class="util-grid">
+            <div class="util-card"><div style="font-size:0.8rem; opacity:0.5;">DATE</div><div id="u-date" style="font-size:1.8rem;">--</div></div>
+            <div class="util-card"><div style="font-size:0.8rem; opacity:0.5;">WEATHER</div><div id="u-temp" style="font-size:1.8rem;">--°C</div></div>
+        </div>
     </div>
+</div>
 
 <script>
     let fuse;
-    let database = [];
-    const input = document.getElementById('main-search');
-    const wall = document.getElementById('index-wall');
-    const progress = document.getElementById('progress');
+    let db = [];
+    const input = document.getElementById('main-in');
+    const resultsCont = document.getElementById('results-container');
+    const utilView = document.getElementById('utility-view');
+    const tabs = document.querySelectorAll('.tab-btn');
 
-    // 1. Fetch & Initialize
-    fetch('./data.json?v=' + Date.now())
-        .then(res => res.json())
-        .then(data => {
-            database = data;
-            fuse = new Fuse(data, { keys: ['title', 'description', 'category'], threshold: 0.4 });
-            renderWall(database); // Show everything on start
-        });
+    // 1. Setup Time
+    function update() {
+        const n = new Date();
+        document.getElementById('clock').innerText = n.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        document.getElementById('u-date').innerText = n.getDate() + " " + n.toLocaleString('en', {month:'short'});
+    }
+    setInterval(update, 1000); update();
 
-    // 2. Render Engine with Bounce
-    function renderWall(items, query = "") {
-        wall.innerHTML = '';
-        
-        // If searching and no results, add Auto-Suggestions
-        if (query && items.length === 0) {
-            const suggestions = [
-                { title: `Search YouTube for "${query}"`, url: `https://www.youtube.com/results?search_query=${query}`, desc: "Jump to video results", isSuggest: true },
-                { title: `Search Google for "${query}"`, url: `https://www.google.com/search?q=${query}`, desc: "Search the web", isSuggest: true }
+    // 2. Load Data
+    fetch('./data.json?v=' + Date.now()).then(r => r.json()).then(data => {
+        db = data;
+        fuse = new Fuse(data, { keys: ['title', 'description', 'category'], threshold: 0.4 });
+        render(db);
+    });
+
+    // 3. Render Engine
+    function render(list, q = "") {
+        resultsCont.innerHTML = '';
+        if (q && list.length === 0) {
+            list = [
+                { title: `Search YouTube: ${q}`, url: `https://youtube.com/results?q=${q}`, desc: "Auto-suggest", isS: true },
+                { title: `Search Google: ${q}`, url: `https://google.com/search?q=${q}`, desc: "Auto-suggest", isS: true }
             ];
-            items = suggestions;
         }
 
-        items.forEach((item, index) => {
-            const card = document.createElement('div');
-            card.className = `item-card ${item.isSuggest ? 'suggestion' : ''}`;
-            card.style.animationDelay = `${index * 0.05}s`; // Staggered bounce
-            
-            card.innerHTML = `
-                <a href="${item.url || item.item.url}" target="_blank">
-                    ${item.title || item.item.title}
-                </a>
-                <p>${item.description || item.item.description || item.desc}</p>
-            `;
-            wall.appendChild(card);
+        list.forEach((item, i) => {
+            const el = document.createElement('div');
+            el.className = `bounce-card ${item.isS ? 'suggest' : ''}`;
+            el.style.animationDelay = `${i * 0.05}s`;
+            const val = item.item || item;
+            el.innerHTML = `<a href="${val.url}" target="_blank">${val.title}</a><p style="font-size:0.8rem; margin:5px 0 0 0; opacity:0.7;">${val.description || val.desc}</p>`;
+            resultsCont.appendChild(el);
         });
     }
 
-    // 3. Live Search logic
     input.addEventListener('input', () => {
         const q = input.value.trim();
-        if (!q) {
-            renderWall(database);
-            return;
-        }
-        const results = fuse.search(q);
-        renderWall(results, q);
+        if(!q) { render(db); return; }
+        render(fuse.search(q), q);
     });
 
-    // 4. Scroll Progress Logic
-    window.addEventListener('scroll', () => {
-        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const scrolled = (winScroll / height) * 100;
-        progress.style.width = scrolled + "%";
+    // 4. Tabs & Utility Logic
+    tabs.forEach(t => {
+        t.addEventListener('click', () => {
+            tabs.forEach(b => b.classList.remove('active'));
+            t.classList.add('active');
+            
+            if(t.dataset.target === 'utility') {
+                resultsCont.classList.add('hidden');
+                utilView.classList.remove('hidden');
+                getW();
+            } else {
+                resultsCont.classList.remove('hidden');
+                utilView.classList.add('hidden');
+                // Filter main index by category
+                const cat = t.dataset.target;
+                if(cat === 'all') render(db);
+                else render(db.filter(i => i.category === cat));
+            }
+        });
     });
+
+    async function getW() {
+        navigator.geolocation.getCurrentPosition(async (p) => {
+            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${p.coords.latitude}&longitude=${p.coords.longitude}&current_weather=true`);
+            const d = await res.json();
+            document.getElementById('u-temp').innerText = Math.round(d.current_weather.temperature) + "°C";
+        });
+    }
 </script>
 
 </body>
